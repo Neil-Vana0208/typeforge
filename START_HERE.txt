@@ -1,0 +1,36 @@
+TYPEFORGE — FINAL ONLINE BUILD
+===============================
+
+This is the consolidated Typeforge web build.
+
+INCLUDED
+- index.html
+- style.css
+- game.js
+- online.js
+- supabase-config.js (already configured for the current Typeforge Supabase project)
+- data/levels.js
+- Supabase SQL setup
+- delete-account Edge Function source
+- deployment/readme files
+
+IMPORTANT
+Your current Supabase project is already connected. Do not replace supabase-config.js unless you intentionally move to another Supabase project.
+
+LOCAL TEST
+1. Open this folder in VS Code.
+2. Use Live Server on index.html.
+3. The game should connect to Supabase automatically.
+
+PUBLIC WEBSITE
+This is a static website, so it can be hosted on GitHub Pages, Netlify, Vercel, etc.
+For GitHub Pages, upload the contents of this folder to a GitHub repository and enable Pages for the main branch/root.
+
+SUPABASE
+The SQL file contains the profile table, RLS policies, public leaderboard view, avatar storage policies, and the required authenticated table grant.
+
+DO NOT SHARE
+Never add a Supabase service-role/secret key to the frontend. The included key is the publishable browser key.
+
+CURRENT ONLINE DATA
+Player scores/profiles are stored in Supabase, so shutting down the laptop does not erase them.

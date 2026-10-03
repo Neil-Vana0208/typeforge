@@ -1,0 +1,491 @@
+    }
+
+}
+
+
+/* =================================
+   RPG COMBAT MODE
+================================= */
+
+const RPG_WORDS = [
+    "type", "fast", "code", "forge", "quick", "focus", "speed", "input",
+    "keyboard", "accuracy", "combat", "player", "damage", "target", "wave",
+    "function", "variable", "algorithm", "javascript", "developer", "precision"
+];
+
+const RPG_BOSS_WORDS = [
+    ["break", "the", "core"],
+    ["type", "with", "precision"],
+    ["forge", "your", "victory"]
+];
+
+let rpgRunning = false;
+let rpgEnemies = [];
+let rpgAnimation = null;
+let rpgSpawnTimer = null;
+let rpgLastFrame = 0;
+let rpgLivesValue = 3;
+let rpgWaveValue = 1;
+let rpgKillsValue = 0;
+let rpgScoreValue = 0;
+let rpgComboValue = 0;
+let rpgGrenades = 2;
+let rpgFreezes = 1;
+let rpgShields = 1;
+let rpgFrozenUntil = 0;
+let rpgShieldActive = false;
+let rpgTargetId = null;
+let rpgEnemyId = 0;
+let rpgBossActive = false;
+let rpgBossPending = false;
+
+function openRPGMode() {
+    levelMenu.style.display = "none";
+    gameScreen.style.display = "none";
+    profileScreen.style.display = "none";
+    rpgScreen.style.display = "block";
+    resetRPG();
+}
+
+function resetRPG() {
+    cancelAnimationFrame(rpgAnimation);
+    clearTimeout(rpgSpawnTimer);
+    rpgRunning = false;
+    rpgEnemies.forEach(e => e.el.remove());
+    rpgEnemies = [];
+    rpgLastFrame = 0;
+    rpgLivesValue = 3;
+    rpgWaveValue = 1;
+    rpgKillsValue = 0;
+    rpgScoreValue = 0;
+    rpgComboValue = 0;
+    rpgGrenades = 2;
+    rpgFreezes = 1;
+    rpgShields = 1;
+    rpgFrozenUntil = 0;
+    rpgShieldActive = false;
+    rpgTargetId = null;
+    rpgBossActive = false;
+    rpgBossPending = false;
+    rpgInput.value = "";
+    rpgInput.disabled = true;
+    rpgStartOverlay.style.display = "flex";
+    rpgGameOver.style.display = "none";
+    grenadeButton.disabled = true;
+    freezeButton.disabled = true;
+    shieldButton.disabled = true;
+    rpgArena.querySelector(".player-core").textContent = "[ YOU ]";
+    rpgArena.classList.remove("boss-mode");
+    updateRPGHud();
+}
+
+function startRPG() {
+    resetRPG();
+    rpgRunning = true;
+    rpgStartOverlay.style.display = "none";
+    rpgInput.disabled = false;
+    grenadeButton.disabled = false;
+    freezeButton.disabled = false;
+    shieldButton.disabled = false;
+    rpgInput.focus();
+    spawnRPGEnemy();
+    scheduleRPGSpawn();
+    rpgAnimation = requestAnimationFrame(rpgLoop);
+}
+
+function scheduleRPGSpawn() {
+    if (!rpgRunning || rpgBossActive || rpgBossPending) return;
+    const delay = Math.max(650, 1700 - rpgWaveValue * 90);
+    rpgSpawnTimer = setTimeout(() => {
+        if (rpgRunning && !rpgBossActive && !rpgBossPending) {
+            spawnRPGEnemy();
+        }
+        scheduleRPGSpawn();
+    }, delay);
+}
+
+function rpgDifficulty() {
+    return {
+        speed: 24 + rpgWaveValue * 3.2,
+        maxEnemies: Math.min(14, 3 + Math.floor(rpgWaveValue * 0.8)),
+        wordPool: Math.min(RPG_WORDS.length, 7 + rpgWaveValue * 2)
+    };
+}
+
+function getRPGSpawnPosition() {
+    const w = rpgArena.clientWidth;
+    const h = rpgArena.clientHeight;
+    const margin = 35;
+    const side = Math.floor(Math.random() * 4);
+    let x, y;
+    if (side === 0) { x = margin + Math.random() * (w - margin * 2); y = margin; }
+    if (side === 1) { x = w - margin; y = margin + Math.random() * (h - margin * 2); }
+    if (side === 2) { x = margin + Math.random() * (w - margin * 2); y = h - margin; }
+    if (side === 3) { x = margin; y = margin + Math.random() * (h - margin * 2); }
+    return { x, y };
+}
+
+function chooseRPGEnemyType() {
+    const roll = Math.random();
+    // Only three regular enemy types exist. The boss is spawned separately.
+    if (rpgWaveValue >= 3 && roll < 0.20) return "ARMORED";
+    if (roll < 0.45) return "RUSH";
+    return "NORMAL";
+}
+
+function spawnRPGEnemy() {
+    if (!rpgRunning || rpgBossActive || rpgBossPending) return;
+    const difficulty = rpgDifficulty();
+    if (rpgEnemies.length >= difficulty.maxEnemies) return;
+
+    const { x, y } = getRPGSpawnPosition();
+    const pool = RPG_WORDS.slice(0, difficulty.wordPool);
+
+    // Never give two active enemies the same word. This keeps typing
+    // unambiguous: one completed word always maps to exactly one enemy.
+    const activeWords = new Set(rpgEnemies.map(e => e.word));
+    let availableWords = pool.filter(word => !activeWords.has(word));
+
+    // If the current pool is exhausted, fall back to the full word list.
+    // (The normal max enemy count is below the total number of words.)
+    if (availableWords.length === 0) {
+        availableWords = RPG_WORDS.filter(word => !activeWords.has(word));
+    }
+
+    const word = availableWords[Math.floor(Math.random() * availableWords.length)];
+    const type = chooseRPGEnemyType();
+    const id = ++rpgEnemyId;
+    const el = document.createElement("div");
+    el.className = "rpg-enemy" +
+        (type === "ARMORED" ? " armored" : "") +
+        (type === "RUSH" ? " rush" : "");
+    el.dataset.id = id;
+    el.dataset.word = word;
+    el.innerHTML = `<div class="rpg-enemy-core">[${type}]</div><div class="rpg-enemy-word">${word}</div>${type === "ARMORED" ? '<div class="rpg-enemy-hp">HP ■■</div>' : ''}`;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.addEventListener("click", () => selectRPGTarget(id));
+    rpgArena.appendChild(el);
+
+    rpgEnemies.push({
+        id,
+        el,
+        x,
+        y,
+        word,
+        type,
+        hp: type === "ARMORED" ? 2 : 1,
+        speed: difficulty.speed * (type === "RUSH" ? 1.35 : 0.85 + Math.random() * 0.35)
+    });
+
+    if (rpgTargetId === null || !rpgEnemies.some(e => e.id === rpgTargetId)) {
+        selectRPGTarget(id);
+    }
+}
+
+function selectRPGTarget(id) {
+    rpgTargetId = id;
+    rpgEnemies.forEach(e => e.el.classList.toggle("targeted", e.id === id));
+    rpgInput.value = "";
+    rpgInput.focus();
+}
+
+function getRPGTarget() {
+    // Always recover a valid target if the previous target was removed.
+    let target = rpgEnemies.find(e => e.id === rpgTargetId);
+    if (!target && rpgEnemies.length) {
+        target = rpgEnemies[0];
+        rpgTargetId = target.id;
+        rpgEnemies.forEach(e => e.el.classList.toggle("targeted", e.id === target.id));
+    }
+    return target || null;
+}
+
+function advanceRPGWave() {
+    rpgWaveValue++;
+    if (rpgWaveValue % 3 === 0) rpgGrenades++;
+    if (rpgWaveValue % 4 === 0) rpgFreezes++;
+
+    // Every 5th wave becomes a boss encounter.
+    if (rpgWaveValue % 5 === 0) {
+        rpgBossPending = true;
+        clearTimeout(rpgSpawnTimer);
+        rpgSpawnTimer = null;
+        if (rpgEnemies.length === 0) startRPGBoss();
+    }
+}
+
+function destroyRPGEnemy(enemy, bonus = 0, countKill = true) {
+    if (!enemy || !rpgRunning) return;
+    enemy.el.classList.add("dead");
+    rpgComboValue++;
+    if (countKill) rpgKillsValue++;
+    rpgScoreValue += 100 + rpgComboValue * 10 + bonus;
+    setTimeout(() => enemy.el.remove(), 350);
+    rpgEnemies = rpgEnemies.filter(e => e.id !== enemy.id);
+    if (rpgTargetId === enemy.id) rpgTargetId = null;
+
+    if (countKill && rpgKillsValue % 5 === 0) {
+        advanceRPGWave();
+    }
+
+    if (rpgEnemies.length === 0 && rpgBossPending && !rpgBossActive) {
+        startRPGBoss();
+    } else if (!rpgTargetId && rpgEnemies.length) {
+        selectRPGTarget(rpgEnemies[0].id);
+    }
+
+    rpgInput.value = "";
+    updateRPGHud();
+}
+
+function startRPGBoss() {
+    if (!rpgRunning || rpgBossActive) return;
+    rpgBossPending = false;
+    rpgBossActive = true;
+    clearTimeout(rpgSpawnTimer);
+    rpgSpawnTimer = null;
+
+    // Safety: boss arena contains only the boss.
+    rpgEnemies.forEach(e => e.el.remove());
+    rpgEnemies = [];
+    rpgTargetId = null;
+
+    const w = rpgArena.clientWidth;
+    const h = rpgArena.clientHeight;
+    const id = ++rpgEnemyId;
+    const phase = 0;
+    const word = RPG_BOSS_WORDS[phase][Math.floor(Math.random() * RPG_BOSS_WORDS[phase].length)];
+    const el = document.createElement("div");
+    el.className = "rpg-enemy rpg-boss";
+    el.dataset.id = id;
+    el.dataset.word = word;
+    el.innerHTML = `<div class="rpg-boss-phase">BOSS // PHASE 1</div><div class="rpg-enemy-core">[ CORE ]</div><div class="rpg-enemy-word">${word}</div><div class="rpg-enemy-hp">HP ■■■</div>`;
+    el.style.left = (w * 0.5) + "px";
+    el.style.top = Math.max(90, h * 0.22) + "px";
+    el.addEventListener("click", () => selectRPGTarget(id));
+    rpgArena.appendChild(el);
+
+    rpgEnemies.push({
+        id,
+        el,
+        x: w * 0.5,
+        y: Math.max(90, h * 0.22),
+        word,
+        type: "BOSS",
+        hp: 3,
+        phase,
+        speed: 11 + rpgWaveValue * 0.8
+    });
+
+    rpgArena.classList.add("boss-mode");
+    rpgArena.querySelector(".player-core").textContent = "[ BOSS ]";
+    selectRPGTarget(id);
+    updateRPGHud();
+}
+
+function damageRPGBoss(boss) {
+    boss.hp--;
+    boss.el.classList.remove("hit");
+    void boss.el.offsetWidth;
+    boss.el.classList.add("hit");
+
+    if (boss.hp <= 0) {
+        boss.el.classList.add("dead");
+        rpgComboValue++;
+        rpgKillsValue++;
+        rpgScoreValue += 750 + rpgComboValue * 25;
+        rpgEnemies = [];
+        rpgTargetId = null;
+        rpgBossActive = false;
+        rpgArena.classList.remove("boss-mode");
+        rpgArena.querySelector(".player-core").textContent = "[ YOU ]";
+        rpgWaveValue++;
+        rpgInput.value = "";
+        setTimeout(() => {
+            if (rpgRunning) {
+                scheduleRPGSpawn();
+                spawnRPGEnemy();
+            }
+        }, 900);
+        updateRPGHud();
+        return;
+    }
+
+    boss.phase++;
+    const phaseWords = RPG_BOSS_WORDS[Math.min(boss.phase, RPG_BOSS_WORDS.length - 1)];
+    boss.word = phaseWords[Math.floor(Math.random() * phaseWords.length)];
+    boss.el.dataset.word = boss.word;
+    boss.el.querySelector(".rpg-boss-phase").textContent = `BOSS // PHASE ${boss.phase + 1}`;
+    boss.el.querySelector(".rpg-enemy-word").textContent = boss.word;
+    boss.el.querySelector(".rpg-enemy-hp").textContent = "HP " + "■".repeat(boss.hp);
+    rpgInput.value = "";
+    updateRPGHud();
+}
+
+function rpgLoop(timestamp) {
+    if (!rpgRunning) return;
+    const dt = Math.min((timestamp - (rpgLastFrame || timestamp)) / 1000, 0.05);
+    rpgLastFrame = timestamp;
+    const playerX = rpgArena.clientWidth / 2;
+    const playerY = rpgArena.clientHeight / 2;
+    const frozen = performance.now() < rpgFrozenUntil;
+
+    rpgEnemies.slice().forEach(enemy => {
+        if (frozen) return;
+        const dx = playerX - enemy.x;
+        const dy = playerY - enemy.y;
+        const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+        enemy.x += (dx / distance) * enemy.speed * dt;
+        enemy.y += (dy / distance) * enemy.speed * dt;
+        enemy.el.style.left = enemy.x + "px";
+        enemy.el.style.top = enemy.y + "px";
+        if (distance < (enemy.type === "BOSS" ? 55 : 42)) hitPlayer(enemy);
+    });
+    rpgAnimation = requestAnimationFrame(rpgLoop);
+}
+
+function hitPlayer(enemy) {
+    if (!rpgRunning) return;
+    if (rpgShieldActive) {
+        rpgShieldActive = false;
+        enemy.el.classList.add("hit");
+        setTimeout(() => enemy.el.remove(), 180);
+        rpgEnemies = rpgEnemies.filter(e => e.id !== enemy.id);
+        rpgTargetId = null;
+        if (enemy.type === "BOSS") {
+            rpgBossActive = false;
+            rpgArena.classList.remove("boss-mode");
+            rpgArena.querySelector(".player-core").textContent = "[ YOU ]";
+        }
+        updateRPGHud();
+        return;
+    }
+    rpgLivesValue--;
+    rpgComboValue = 0;
+    rpgArena.classList.remove("shake");
+    void rpgArena.offsetWidth;
+    rpgArena.classList.add("shake");
+    enemy.el.remove();
+    rpgEnemies = rpgEnemies.filter(e => e.id !== enemy.id);
+    rpgTargetId = null;
+    if (enemy.type === "BOSS") {
+        rpgBossActive = false;
+        rpgArena.classList.remove("boss-mode");
+        rpgArena.querySelector(".player-core").textContent = "[ YOU ]";
+    }
+    updateRPGHud();
+    if (rpgLivesValue <= 0) endRPG();
+    else if (rpgEnemies.length) selectRPGTarget(rpgEnemies[0].id);
+}
+
+function updateRPGHud() {
+    rpgLives.textContent = rpgLivesValue > 0 ? "■ ".repeat(rpgLivesValue).trim() : "—";
+    rpgWave.textContent = rpgWaveValue;
+    rpgKills.textContent = rpgKillsValue;
+    rpgScore.textContent = rpgScoreValue;
+    rpgCombo.textContent = rpgComboValue;
+    grenadeCount.textContent = rpgGrenades;
+    freezeCount.textContent = rpgFreezes;
+    shieldCount.textContent = rpgShields;
+}
+
+function endRPG() {
+    rpgRunning = false;
+    cancelAnimationFrame(rpgAnimation);
+    clearTimeout(rpgSpawnTimer);
+    rpgInput.disabled = true;
+    grenadeButton.disabled = true;
+    freezeButton.disabled = true;
+    shieldButton.disabled = true;
+    rpgFinalStats.innerHTML = `WAVE ${rpgWaveValue}<br>KILLS ${rpgKillsValue}<br>SCORE ${rpgScoreValue}<br>COMBO ${rpgComboValue}`;
+    rpgGameOver.style.display = "flex";
+}
+
+function useRPGGrenade() {
+    if (!rpgRunning || rpgGrenades <= 0 || rpgBossActive) return;
+    rpgGrenades--;
+    rpgEnemies.slice().forEach(enemy => destroyRPGEnemy(enemy, 50));
+    rpgArena.classList.remove("shake");
+    void rpgArena.offsetWidth;
+    rpgArena.classList.add("shake");
+    updateRPGHud();
+    rpgInput.focus();
+}
+
+function useRPGFreeze() {
+    if (!rpgRunning || rpgFreezes <= 0) return;
+    rpgFreezes--;
+    rpgFrozenUntil = performance.now() + 4500;
+    rpgEnemies.forEach(enemy => enemy.el.style.filter = "brightness(1.7)");
+    setTimeout(() => rpgEnemies.forEach(enemy => enemy.el.style.filter = ""), 4500);
+    updateRPGHud();
+    rpgInput.focus();
+}
+
+function useRPGShield() {
+    if (!rpgRunning || rpgShields <= 0 || rpgShieldActive) return;
+    rpgShields--;
+    rpgShieldActive = true;
+    rpgArena.querySelector(".player-core").textContent = "[ SHIELD ]";
+    setTimeout(() => {
+        rpgShieldActive = false;
+        if (rpgRunning) rpgArena.querySelector(".player-core").textContent = rpgBossActive ? "[ BOSS ]" : "[ YOU ]";
+    }, 5000);
+    updateRPGHud();
+    rpgInput.focus();
+}
+
+rpgInput.addEventListener("input", () => {
+    if (!rpgRunning) return;
+
+    // Recover focus/target state if an enemy was removed between keystrokes.
+    const target = getRPGTarget();
+    if (!target) {
+        rpgInput.value = "";
+        rpgInput.focus();
+        return;
+    }
+
+    const typed = rpgInput.value.toLowerCase();
+    if (target.word.startsWith(typed)) {
+        if (typed === target.word) {
+            if (target.type === "BOSS") {
+                damageRPGBoss(target);
+            } else if (target.hp > 1) {
+                target.hp--;
+                target.el.classList.remove("hit");
+                void target.el.offsetWidth;
+                target.el.classList.add("hit");
+
+                // First hit breaks the blue armor; the second hit defeats it.
+                if (target.type === "ARMORED" && target.hp === 1) {
+                    target.el.classList.remove("armored");
+                    target.el.classList.add("armor-broken");
+                }
+
+                target.el.querySelector(".rpg-enemy-hp").textContent = "HP ■";
+                rpgComboValue++;
+                rpgScoreValue += 40 + rpgComboValue * 5;
+                rpgInput.value = "";
+                updateRPGHud();
+            } else {
+                destroyRPGEnemy(target);
+            }
+        }
+    } else {
+        rpgComboValue = 0;
+        rpgInput.value = "";
+        updateRPGHud();
+    }
+});
+
+rpgModeButton.addEventListener("click", openRPGMode);
+rpgBackButton.addEventListener("click", () => { resetRPG(); showLevelMenu(); });
+rpgStartButton.addEventListener("click", startRPG);
+rpgRetryButton.addEventListener("click", startRPG);
+rpgMenuButton.addEventListener("click", () => { resetRPG(); showLevelMenu(); });
+grenadeButton.addEventListener("click", useRPGGrenade);
+freezeButton.addEventListener("click", useRPGFreeze);
+shieldButton.addEventListener("click", useRPGShield);
+
