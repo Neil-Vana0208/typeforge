@@ -1109,3 +1109,75 @@ button:hover {
 .danger-button:hover { background:#3a1111; }
 .account-row { display:flex; justify-content:space-between; align-items:center; gap:15px; color:#777; font-size:10px; line-height:1.6; }
 @media(max-width:700px) { .leaderboard-row { grid-template-columns:36px 1fr 80px; } .leaderboard-wave { display:none; } .account-row { flex-direction:column; align-items:flex-start; } }
+
+/* =================================
+   TYPEFORGE RACING MODE
+================================= */
+.racing-screen {
+    display: none;
+    width: min(1000px, 94%);
+    margin: 28px auto;
+    padding: clamp(18px, 4vw, 38px);
+    color: #e9f7ff;
+    background: radial-gradient(ellipse at top, #14253b 0%, #080d16 65%);
+    border: 1px solid #28435b;
+    border-radius: 16px;
+    box-shadow: 0 0 35px #00d9ff12;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.racing-header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.racing-title { font-size:clamp(22px, 4vw, 34px); font-weight:900; letter-spacing:2px; color:#68e8ff; }
+.racing-subtitle { margin-top:7px; color:#8ca9c4; font-size:11px; letter-spacing:2px; }
+.racing-back-button { padding:10px 14px; background:#18283a; color:#dff8ff; border:1px solid #37546d; border-radius:7px; cursor:pointer; }
+.racing-hud { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:26px 0; }
+.racing-stat { text-align:center; padding:13px 8px; background:#0c1725; border:1px solid #20384d; border-radius:10px; }
+.racing-stat span { display:block; color:#86a5bf; font-size:11px; letter-spacing:2px; }
+.racing-stat strong { display:block; margin-top:5px; color:#73f5bd; font-size:clamp(22px,4vw,30px); }
+.racing-track { position:relative; padding:18px 18px 14px; background:linear-gradient(180deg,#10251f 0%,#091513 100%); border:1px solid #285246; border-radius:14px; overflow:hidden; box-shadow:inset 0 0 35px #0005,0 12px 28px #0004; }
+.racing-track::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.18; background:repeating-linear-gradient(115deg,transparent 0 34px,#4c8b61 35px 37px,transparent 38px 68px); }
+.racing-track-topline { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 13px; }
+.racing-track-label { display:flex; align-items:center; gap:8px; margin:0; color:#c0d8d0; font-size:10px; font-weight:900; letter-spacing:2px; }
+.racing-track-label::before { content:""; width:7px; height:7px; border-radius:50%; background:#55f2b0; box-shadow:0 0 9px #55f2b080; }
+.racing-track-status { color:#6df6b8; font-size:9px; font-weight:900; letter-spacing:1.5px; }
+.racing-lane { position:relative; height:104px; margin-bottom:12px; overflow:hidden; border:1px solid #5c6873; border-radius:7px; background:linear-gradient(to bottom,#48515b 0 5px,#252d36 5px 8px,#333c46 8px 94px,#252d36 94px 97px,#48515b 97px 104px); box-shadow:0 6px 15px #0008,inset 0 0 0 2px #ffffff08; }
+.racing-lane::before { content:""; position:absolute; left:0; right:0; top:50px; height:3px; background:repeating-linear-gradient(90deg,#e8e4bd 0 30px,transparent 30px 52px); opacity:.9; animation:racingRoadMove .7s linear infinite; }
+.racing-lane::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,#fff0 0%,#fff0 58%,#ffffff08 100%),repeating-linear-gradient(0deg,#f4f4e9 0 8px,#d94d4d 8px 16px); mask-image:linear-gradient(to right,black 0 5px,transparent 5px calc(100% - 5px),black calc(100% - 5px)); opacity:.8; }
+.racing-lane:last-child { margin-bottom:0; }
+.racing-player-lane { border-color:#00d9ff80; }
+.racing-ghost-lane { border-color:#ffbd5970; }
+.racing-lane-name { position:absolute; z-index:1; top:8px; left:10px; display:flex; align-items:center; gap:6px; color:#d8e6ef; font-size:9px; font-weight:900; letter-spacing:1px; opacity:.8; }
+.racing-lane-name span { padding:2px 5px; border-radius:3px; background:#00d9ff20; color:#73eaff; }
+.racing-ghost-lane .racing-lane-name span { background:#ffbd5920; color:#ffd18a; }
+.racing-start-line { position:absolute; z-index:1; top:0; bottom:0; left:100px; width:4px; background:repeating-linear-gradient(to bottom,#fff 0 8px,#e14d59 8px 16px); box-shadow:0 0 9px #ffffff50; opacity:.8; }
+.racing-car { position:absolute; z-index:4; left:0; top:30px; display:flex; flex-direction:column; align-items:center; justify-content:center; width:96px; height:66px; background:transparent; color:#00111a; font-size:12px; font-weight:900; filter:drop-shadow(0 4px 3px #000b); transition:left .08s linear; }
+.racing-car-sprite { display:block; font-size:47px; line-height:48px; transform:scaleX(-1); filter:drop-shadow(0 0 8px #00d9ff25); }
+.racing-car-tag { display:block; margin-top:-2px; padding:2px 6px; border-radius:4px; background:#00d9ff; color:#06202a; font-size:8px; line-height:10px; letter-spacing:1.2px; box-shadow:0 0 8px #00d9ff60; }
+.racing-ghost .racing-car-tag { background:#ffbd59; color:#2b1900; box-shadow:0 0 8px #ffbd5960; }
+.racing-finish-line { position:absolute; z-index:2; top:0; right:13px; width:22px; height:100%; display:flex; align-items:center; justify-content:center; background:repeating-conic-gradient(#f8fafc 0% 25%,#202a34 0% 50%) 50% / 14px 14px; border-left:3px solid #f8fafc; border-right:3px solid #f8fafc; box-shadow:0 0 16px #fff5; }
+.racing-finish-line span { position:absolute; right:24px; top:8px; padding:3px 5px; color:#fff; background:#101820e8; border:1px solid #ffffff70; border-radius:3px; font-size:8px; font-weight:900; letter-spacing:1px; writing-mode:vertical-rl; }
+.racing-track-footer { position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 2px 0; color:#7fa99a; font-size:8px; font-weight:900; letter-spacing:1.3px; }
+.racing-track-footer span:nth-child(2) { color:#4de5b1; text-align:center; }
+.race-live .racing-car { filter:drop-shadow(0 4px 4px #000b) drop-shadow(0 0 7px #00d9ff45); }
+.race-live .racing-ghost { filter:drop-shadow(0 4px 4px #000b) drop-shadow(0 0 7px #ffbd5945); }
+.race-live .racing-track-status { color:#ffcf71; animation:raceStatusPulse .8s ease-in-out infinite alternate; }
+@keyframes raceStatusPulse { to { opacity:.45; } }
+@keyframes racingRoadMove { to { background-position:-48px 0; } }
+.racing-message { margin:20px 0; padding:14px; text-align:center; font-weight:900; letter-spacing:2px; color:#91eaff; background:#0a1725; border:1px solid #23435a; border-radius:8px; }
+.racing-message.race-win { color:#75ffbd; border-color:#238a62; }
+.racing-message.race-loss { color:#ffb56d; border-color:#96552b; }
+.racing-prompt-label { margin:18px 0 10px; color:#8ca9c4; font-size:11px; letter-spacing:2px; }
+.racing-prompt { min-height:100px; padding:20px; background:#050a10; border:1px solid #24384b; border-radius:10px; color:#c6d6e4; font-size:clamp(16px,2.4vw,21px); line-height:1.9; overflow-wrap:anywhere; }
+.racing-prompt .race-correct { color:#68f2b0; }
+.racing-prompt .race-wrong { color:#ff6b7d; background:#421923; text-decoration:underline; }
+.racing-prompt .race-current { border-left:2px solid #68e8ff; animation:raceCaret 1s step-end infinite; }
+@keyframes raceCaret { 50% { border-color:transparent; } }
+.racing-input { display:block; width:100%; box-sizing:border-box; margin-top:14px; padding:15px; border:1px solid #31536d; border-radius:8px; background:#0a1522; color:#eafaff; font:inherit; font-size:17px; outline:none; }
+.racing-input:focus { border-color:#68e8ff; box-shadow:0 0 0 3px #68e8ff16; }
+.racing-input:disabled { opacity:.6; }
+.racing-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; }
+.racing-actions button { flex:1; min-width:130px; padding:13px 18px; border:1px solid #3a6079; border-radius:8px; background:#17354a; color:#e8fbff; font-weight:800; letter-spacing:1px; cursor:pointer; }
+.racing-actions button:first-child { background:#00c99a; color:#031810; border-color:#00e5ae; }
+.racing-actions button:disabled { opacity:.55; cursor:not-allowed; }
+.racing-help { margin-top:18px; text-align:center; color:#829db4; font-size:12px; line-height:1.6; }
+@media(max-width:560px) { .racing-screen { margin:10px auto; padding:15px; } .racing-track { padding:10px; } .racing-lane { height:94px; } .racing-lane::before { top:45px; } .racing-car { top:26px; width:84px; } .racing-car-sprite { font-size:41px; } .racing-start-line { left:82px; } .racing-finish-line { right:7px; width:16px; } .racing-finish-line span { right:18px; font-size:7px; } .racing-track-footer { font-size:7px; letter-spacing:.6px; } .racing-track-footer span:nth-child(2) { max-width:50%; } .racing-hud { gap:7px; } .racing-stat { padding:10px 4px; } .racing-prompt { padding:13px; } }
