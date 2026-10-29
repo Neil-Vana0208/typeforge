@@ -33,9 +33,15 @@
     </div>
 
     <button id="rpgModeButton" class="rpg-mode-card">
-        <span class="rpg-mode-title">RPG COMBAT</span>
+        <span class="rpg-mode-title">FORGE SURVIVAL</span>
         <span class="rpg-mode-subtitle">ALWAYS UNLOCKED // TYPE TO SURVIVE</span>
         <span class="rpg-mode-status">★ AVAILABLE</span>
+    </button>
+
+    <button id="racingModeButton" class="rpg-mode-card">
+        <span class="rpg-mode-title">TYPEFORGE RACING</span>
+        <span class="rpg-mode-subtitle">SPEED // ACCURACY // COMPETITION</span>
+        <span class="rpg-mode-status">NEW MODE // AVAILABLE</span>
     </button>
 
     <button id="profileButton" class="profile-button">
@@ -57,7 +63,7 @@
     <div id="leaderboardScreen" class="profile-screen">
         <div class="profile-header">
             <div class="profile-title">GLOBAL LEADERBOARD</div>
-            <div class="profile-subtitle">RPG COMBAT // HIGHEST SCORE</div>
+            <div class="profile-subtitle">FORGE SURVIVAL // HIGHEST SCORE</div>
         </div>
         <div class="leaderboard-note" id="leaderboardStatus">CONNECTING...</div>
         <div id="leaderboardList" class="leaderboard-list"></div>
@@ -299,14 +305,14 @@
 
 
 <!-- =================================
-     RPG COMBAT MODE
+     FORGE SURVIVAL MODE
 ================================= -->
 
 <div id="rpgScreen" class="rpg-screen">
 
     <div class="rpg-header">
         <div>
-            <div class="rpg-title">TYPEFORGE // RPG COMBAT</div>
+            <div class="rpg-title">TYPEFORGE // FORGE SURVIVAL</div>
             <div class="rpg-subtitle">TYPE THE ENEMY WORDS BEFORE THEY REACH YOU</div>
         </div>
         <button id="rpgBackButton" class="rpg-small-button">LEVEL SELECT</button>
@@ -323,14 +329,14 @@
     </div>
 
     <div id="rpgArena" class="rpg-arena">
-        <div class="rpg-center-player">
+        <div class="rpg-center-player rpg-player-left">
             <div class="player-core">[ YOU ]</div>
             <div class="player-prompt">TYPE TO ATTACK</div>
         </div>
         <div id="rpgStartOverlay" class="rpg-overlay">
-            <div class="rpg-overlay-title">RPG COMBAT</div>
+            <div class="rpg-overlay-title">FORGE SURVIVAL</div>
             <div class="rpg-overlay-text">Enemies will approach from the edges.<br>Type any visible enemy word to attack it. Armored enemies take two hits. Every 5th wave is a boss fight. Level up to unlock typing powerups.</div>
-            <button id="rpgStartButton" class="rpg-start-button">START COMBAT</button>
+            <button id="rpgStartButton" class="rpg-start-button">SURVIVAL BEGINS</button>
         </div>
     </div>
 
@@ -347,7 +353,7 @@
     </div>
 
     <div id="rpgGameOver" class="rpg-game-over" style="display:none;">
-        <div class="rpg-overlay-title">COMBAT ENDED</div>
+        <div class="rpg-overlay-title">SURVIVAL ENDS</div>
         <div id="rpgFinalStats" class="rpg-final-stats"></div>
         <button id="rpgRetryButton" class="rpg-start-button">TRY AGAIN</button>
         <button id="rpgMenuButton" class="rpg-small-button">LEVEL SELECT</button>
@@ -733,12 +739,91 @@
 </div>
 
 
+<!-- =================================
+     TYPEFORGE RACING MODE
+================================= -->
+<div id="racingScreen" class="racing-screen">
+    <div class="racing-header">
+        <div>
+            <div class="racing-title">TYPEFORGE // RACING</div>
+            <div class="racing-subtitle">SPEED IS NOTHING WITHOUT ACCURACY</div>
+        </div>
+        <button id="racingBackButton" class="racing-back-button">
+            LEVEL SELECT
+        </button>
+    </div>
+
+    <div class="racing-hud">
+        <div class="racing-stat">
+            <span>WPM</span>
+            <strong id="racingWpm">0</strong>
+        </div>
+        <div class="racing-stat">
+            <span>ACCURACY</span>
+            <strong id="racingAccuracy">100%</strong>
+        </div>
+        <div class="racing-stat">
+            <span>TIME</span>
+            <strong id="racingTime">0.0s</strong>
+        </div>
+    </div>
+
+    <div class="racing-track">
+        <div class="racing-track-topline"><span class="racing-track-label">DRAG STRIP // ¼ MILE</span><span class="racing-track-status">● READY</span></div>
+        <div class="racing-lane racing-player-lane" aria-label="Your racing lane">
+            <div class="racing-lane-name">01 <span>YOU</span></div>
+            <div class="racing-start-line" aria-hidden="true"></div>
+            <div id="racingPlayerCar" class="racing-car" aria-label="Your car"><span class="racing-car-sprite" aria-hidden="true">🏎️</span><span class="racing-car-tag">PLAYER</span></div>
+            <div class="racing-finish-line"><span>FINISH</span></div>
+        </div>
+        <div class="racing-lane racing-ghost-lane" aria-label="Ghost racer's racing lane">
+            <div class="racing-lane-name">02 <span>CPU</span></div>
+            <div class="racing-start-line" aria-hidden="true"></div>
+            <div id="racingGhostCar" class="racing-car racing-ghost" aria-label="Ghost racer"><span class="racing-car-sprite" aria-hidden="true">🚙</span><span class="racing-car-tag">GHOST</span></div>
+            <div class="racing-finish-line"><span>FINISH</span></div>
+        </div>
+        <div class="racing-track-footer"><span>START</span><span>FULL THROTTLE // TYPE TO ACCELERATE</span><span>FINISH</span></div>
+    </div>
+
+    <div id="racingMessage" class="racing-message">
+        READY TO RACE?
+    </div>
+
+    <div class="racing-prompt-label">TYPE THE TEXT BELOW TO ACCELERATE</div>
+    <div id="racingPrompt" class="racing-prompt">
+        READY SET TYPE
+    </div>
+
+    <input
+        id="racingInput"
+        class="racing-input"
+        type="text"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="Type here to race..."
+        disabled
+    >
+
+    <div class="racing-actions">
+        <button id="racingStartButton">START RACE</button>
+        <button id="racingResetButton">RESET</button>
+    </div>
+
+    <div class="racing-help">
+        Type the displayed words accurately to move your car.
+        Finish the text before the ghost racer to win.
+    </div>
+</div>
+
+
 
 
 <script src="data/levels.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="game.js"></script>
+<script src="racing.js"></script>
 <script src="online.js"></script>
 
 </body>
